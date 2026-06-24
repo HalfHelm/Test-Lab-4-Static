@@ -1,0 +1,25 @@
+<<<<<<< Updated upstream
+fileFormatVersion: 2
+guid: 08abac78cc93fe24b8f56bb4c83d0c06
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 12388, guid: 0000000000000000e000000000000000, type: 0}
+  disableValidation: 0
+=======
+fileFormatVersion: 2
+guid: 08abac78cc93fe24b8f56bb4c83d0c06
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 12388, guid: 0000000000000000e000000000000000, type: 0}
+  disableValidation: 0
+>>>>>>> Stashed changes

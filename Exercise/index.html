@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Messenger</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h2>Register</h2>
+<input id="reg-name" placeholder="Name">
+<input id="reg-email" placeholder="Email">
+<input id="reg-password" type="password" placeholder="Password">
+<input id="reg-group" placeholder="Group ID">
+<button id="register-btn">Register</button>
+
+<h2>Login</h2>
+<input id="login-user" placeholder="Username or Email">
+<input id="login-password" type="password" placeholder="Password">
+<button id="login-btn">Login</button>
+
+<hr>
+
+<div id="app">
+
+  <div id="sidebar">
+    <h3>Users</h3>
+    <ul id="user-list"></ul>
+  </div>
+
+  <div id="chat">
+    <div id="chat-messages"></div>
+
+    <form id="chat-form">
+      <input id="chat-input" type="text" placeholder="Message..." />
+      <button type="submit">Send</button>
+    </form>
+  </div>
+
+</div>
+
+<script type="module" src="./dist/app.js"></script>
+
+</body>
+</html>

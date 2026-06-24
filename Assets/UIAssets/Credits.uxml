@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement name="VisualElement" style="flex-grow: 1; background-color: rgb(242, 233, 227); padding-top: 84px; padding-right: 84px; padding-bottom: 84px; padding-left: 84px;">
+        <ui:Button parse-escape-sequences="true" display-tooltip-when-elided="true" style="width: 90px; height: 90px; opacity: 0;" />
+        <ui:VisualElement style="flex-grow: 0; background-image: url(&apos;project://database/Assets/UIAssets/Screenshot%202024-06-04%20174755.png?fileID=2800000&amp;guid=00274e955d58abc41b13cd92598c6d66&amp;type=3#Screenshot 2024-06-04 174755&apos;); width: 100%; height: 76%; flex-shrink: 0; margin-top: 0;" />
+    </ui:VisualElement>
+</ui:UXML>
