@@ -1,5 +1,5 @@
-export interface ApiResponse { //es modules
-  success?: boolean; //optionale vars
+﻿export interface ApiResponse {
+  success?: boolean;
   error?: string;
   token?: string;
   id?: string;
@@ -18,38 +18,49 @@ export interface ChatMessage {
   timestamp?: number;
 }
 
-const BASE_URL =
-  "http://webp-ilv-backend.cs.technikum-wien.at/messenger";
+const BASE_URL = "http://webp-ilv-backend.cs.technikum-wien.at/messenger";
 
 export class ApiService {
   private static token: string | null = null;
   private static userId: string | null = null;
 
-  static getUserId() {
+  static getUserId(): string | null {
     return this.userId;
   }
 
-  // REGISTER
-  static async registerUser(name: string, email: string, password: string, groupId: string) {
-    const res = await fetch(`${BASE_URL}/registrieren.php`, { 
-      method: "POST",
-      body: new URLSearchParams({ name, email, password, group_id: groupId })
-    });
+  private static async handleResponse<T>(response: Response): Promise<T> {
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Network error ${response.status}: ${errorText}`);
+    }
 
-    return await res.json();
+    return response.json() as Promise<T>;
   }
 
-  // LOGIN
-  static async loginUser(usernameOrEmail: string, password: string) {
-    const res = await fetch(`${BASE_URL}/login.php`, {
+  static async registerUser(
+    name: string,
+    email: string,
+    password: string,
+    groupId: string
+  ): Promise<ApiResponse> {
+    const response = await fetch(`${BASE_URL}/registrieren.php`, {
+      method: "POST",
+      body: new URLSearchParams({ name, email, password, group_id: groupId }),
+    });
+
+    return this.handleResponse<ApiResponse>(response);
+  }
+
+  static async loginUser(usernameOrEmail: string, password: string): Promise<ApiResponse> {
+    const response = await fetch(`${BASE_URL}/login.php`, {
       method: "POST",
       body: new URLSearchParams({
         username_or_email: usernameOrEmail,
-        password
-      })
+        password,
+      }),
     });
 
-    const data = await res.json();
+    const data = await this.handleResponse<ApiResponse>(response);
 
     if (data.token && data.id) {
       this.token = data.token;
@@ -59,36 +70,53 @@ export class ApiService {
     return data;
   }
 
-  // USERS
   static async getUsers(): Promise<User[]> {
-    const res = await fetch(
-      `${BASE_URL}/get_users.php?token=${this.token}&id=${this.userId}` //userliste vom server abgerufen
+    if (!this.token || !this.userId) {
+      throw new Error("User is not logged in.");
+    }
+
+    const response = await fetch(
+      `${BASE_URL}/get_users.php?token=${encodeURIComponent(this.token)}&id=${encodeURIComponent(
+        this.userId
+      )}`
     );
 
-    return await res.json(); //als json zurückgegeben
+    return this.handleResponse<User[]>(response);
   }
 
-  // CONVERSATION (TASK 1)
   static async getConversation(user1: string, user2: string): Promise<ChatMessage[]> {
-    const res = await fetch(
-      `${BASE_URL}/get_conversation.php?token=${this.token}&user1_id=${user1}&user2_id=${user2}`
-    ); // Lädt den Chatverlauf zwischen zwei Nutzern vom Server, wenn token gültig
+    if (!this.token) {
+      throw new Error("User is not logged in.");
+    }
 
-    return await res.json(); //gibt ihn als json array zurück (promise)
+    const response = await fetch(
+      `${BASE_URL}/get_conversation.php?token=${encodeURIComponent(this.token)}&user1_id=${encodeURIComponent(
+        user1
+      )}&user2_id=${encodeURIComponent(user2)}`
+    );
+
+    return this.handleResponse<ChatMessage[]>(response);
   }
 
-  // SEND MESSAGE
-  static async sendMessage(senderId: string, receiverId: string, message: string) {
-    const res = await fetch(`${BASE_URL}/send_message.php`, { //daten an server geschickt
-      method: "POST", //weiterverarbeitung
+  static async sendMessage(
+    senderId: string,
+    receiverId: string,
+    message: string
+  ): Promise<ApiResponse> {
+    if (!this.token) {
+      throw new Error("User is not logged in.");
+    }
+
+    const response = await fetch(`${BASE_URL}/send_message.php`, {
+      method: "POST",
       body: new URLSearchParams({
-        token: this.token || "",
+        token: this.token,
         sender_id: senderId,
         receiver_id: receiverId,
-        message
-      })
+        message,
+      }),
     });
 
-    return await res.json();
+    return this.handleResponse<ApiResponse>(response);
   }
 }

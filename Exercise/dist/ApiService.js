@@ -12,27 +12,34 @@ export class ApiService {
     static getUserId() {
         return this.userId;
     }
-    // REGISTER
-    static registerUser(name, email, password, groupId) {
+    static handleResponse(response) {
         return __awaiter(this, void 0, void 0, function* () {
-            const res = yield fetch(`${BASE_URL}/registrieren.php`, {
-                method: "POST",
-                body: new URLSearchParams({ name, email, password, group_id: groupId })
-            });
-            return yield res.json();
+            if (!response.ok) {
+                const errorText = yield response.text();
+                throw new Error(`Network error ${response.status}: ${errorText}`);
+            }
+            return response.json();
         });
     }
-    // LOGIN
+    static registerUser(name, email, password, groupId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const response = yield fetch(`${BASE_URL}/registrieren.php`, {
+                method: "POST",
+                body: new URLSearchParams({ name, email, password, group_id: groupId }),
+            });
+            return this.handleResponse(response);
+        });
+    }
     static loginUser(usernameOrEmail, password) {
         return __awaiter(this, void 0, void 0, function* () {
-            const res = yield fetch(`${BASE_URL}/login.php`, {
+            const response = yield fetch(`${BASE_URL}/login.php`, {
                 method: "POST",
                 body: new URLSearchParams({
                     username_or_email: usernameOrEmail,
-                    password
-                })
+                    password,
+                }),
             });
-            const data = yield res.json();
+            const data = yield this.handleResponse(response);
             if (data.token && data.id) {
                 this.token = data.token;
                 this.userId = data.id;
@@ -40,34 +47,39 @@ export class ApiService {
             return data;
         });
     }
-    // USERS
     static getUsers() {
         return __awaiter(this, void 0, void 0, function* () {
-            const res = yield fetch(`${BASE_URL}/get_users.php?token=${this.token}&id=${this.userId}` //userliste vom server abgerufen
-            );
-            return yield res.json(); //als json zurückgegeben
+            if (!this.token || !this.userId) {
+                throw new Error("User is not logged in.");
+            }
+            const response = yield fetch(`${BASE_URL}/get_users.php?token=${encodeURIComponent(this.token)}&id=${encodeURIComponent(this.userId)}`);
+            return this.handleResponse(response);
         });
     }
-    // CONVERSATION (TASK 1)
     static getConversation(user1, user2) {
         return __awaiter(this, void 0, void 0, function* () {
-            const res = yield fetch(`${BASE_URL}/get_conversation.php?token=${this.token}&user1_id=${user1}&user2_id=${user2}`); // Lädt den Chatverlauf zwischen zwei Nutzern vom Server, wenn token gültig
-            return yield res.json(); //gibt ihn als json array zurück (promise)
+            if (!this.token) {
+                throw new Error("User is not logged in.");
+            }
+            const response = yield fetch(`${BASE_URL}/get_conversation.php?token=${encodeURIComponent(this.token)}&user1_id=${encodeURIComponent(user1)}&user2_id=${encodeURIComponent(user2)}`);
+            return this.handleResponse(response);
         });
     }
-    // SEND MESSAGE
     static sendMessage(senderId, receiverId, message) {
         return __awaiter(this, void 0, void 0, function* () {
-            const res = yield fetch(`${BASE_URL}/send_message.php`, {
-                method: "POST", //weiterverarbeitung
+            if (!this.token) {
+                throw new Error("User is not logged in.");
+            }
+            const response = yield fetch(`${BASE_URL}/send_message.php`, {
+                method: "POST",
                 body: new URLSearchParams({
-                    token: this.token || "",
+                    token: this.token,
                     sender_id: senderId,
                     receiver_id: receiverId,
-                    message
-                })
+                    message,
+                }),
             });
-            return yield res.json();
+            return this.handleResponse(response);
         });
     }
 }

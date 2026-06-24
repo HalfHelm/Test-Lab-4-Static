@@ -7,79 +7,108 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { ApiService } from "./ApiService.js"; //es module
-let selectedUser = null; //user auf null gesetzt
-document.getElementById("register-btn").addEventListener("click", () => __awaiter(void 0, void 0, void 0, function* () {
-    const name = document.getElementById("reg-name").value;
-    const email = document.getElementById("reg-email").value;
-    const password = document.getElementById("reg-password").value;
-    const group = document.getElementById("reg-group").value;
-    const res = yield ApiService.registerUser(name, email, password, group);
-    alert(res.success ? "Registered!" : res.error);
-}));
-document.getElementById("login-btn").addEventListener("click", () => __awaiter(void 0, void 0, void 0, function* () {
-    const user = document.getElementById("login-user").value;
-    const pass = document.getElementById("login-password").value;
-    const res = yield ApiService.loginUser(user, pass);
-    if (!res.token) {
-        alert("Login failed");
-        return;
+import { ApiService } from "./ApiService.js";
+let selectedUser = null;
+const getElementById = (id) => {
+    const element = document.getElementById(id);
+    if (!element) {
+        throw new Error(`Element with id "${id}" not found.`);
     }
-    alert("Login success!");
-    loadUsers();
-}));
-function loadUsers() {
-    return __awaiter(this, void 0, void 0, function* () {
+    return element;
+};
+const getInputValue = (id) => {
+    return getElementById(id).value.trim();
+};
+const showError = (message) => {
+    console.error(message);
+    alert(message);
+};
+const loadUsers = () => __awaiter(void 0, void 0, void 0, function* () {
+    try {
         const users = yield ApiService.getUsers();
-        const list = document.getElementById("user-list");
-        list.innerHTML = ""; //zuerst geleert
-        users.forEach(user => {
+        const list = getElementById("user-list");
+        list.innerHTML = "";
+        users.forEach((user) => {
             const li = document.createElement("li");
             li.textContent = user.name;
-            li.onclick = () => {
-                //REMOVE active from all
-                document.querySelectorAll("#user-list li")
-                    .forEach(el => el.classList.remove("active"));
-                //SET active, nur der geklickte user
+            li.addEventListener("click", () => __awaiter(void 0, void 0, void 0, function* () {
+                list.querySelectorAll("li").forEach((item) => item.classList.remove("active"));
                 li.classList.add("active");
                 selectedUser = user.id;
-                loadConversation(user.id);
-            };
+                yield loadConversation(user.id);
+            }));
             list.appendChild(li);
         });
-    });
-}
-function loadConversation(otherUserId) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const myId = ApiService.getUserId();
-        if (!myId)
-            return; //wenn kein user eingeloggt, abbrechen
+    }
+    catch (error) {
+        showError(error instanceof Error ? error.message : "Unable to load users.");
+    }
+});
+const loadConversation = (otherUserId) => __awaiter(void 0, void 0, void 0, function* () {
+    const myId = ApiService.getUserId();
+    if (!myId) {
+        return;
+    }
+    try {
         const messages = yield ApiService.getConversation(myId, otherUserId);
-        const chat = document.getElementById("chat-messages");
-        chat.innerHTML = ""; //zuerst geleert
-        messages.forEach(msg => {
+        const chat = getElementById("chat-messages");
+        chat.innerHTML = "";
+        messages.forEach((msg) => {
             const div = document.createElement("div");
-            div.className = msg.sender_id === myId ? "sent" : "received"; //unterscheidung ob gesendet oder empfangen
+            div.className = msg.sender_id === myId ? "sent" : "received";
             div.textContent = msg.message;
             chat.appendChild(div);
         });
-        chat.scrollTop = chat.scrollHeight; //nach unten gescrollt
-    });
-}
+        chat.scrollTop = chat.scrollHeight;
+    }
+    catch (error) {
+        showError(error instanceof Error ? error.message : "Unable to load conversation.");
+    }
+});
 window.addEventListener("DOMContentLoaded", () => {
     console.log("APP READY");
-    const form = document.getElementById("chat-form");
-    const input = document.getElementById("chat-input");
-    if (!form || !input) {
-        console.error("CHAT UI NOT FOUND");
-        return;
-    }
-    form.addEventListener("submit", (e) => __awaiter(void 0, void 0, void 0, function* () {
-        e.preventDefault();
-        console.log("SEND CLICKED");
+    const registerButton = getElementById("register-btn");
+    const loginButton = getElementById("login-btn");
+    const form = getElementById("chat-form");
+    const input = getElementById("chat-input");
+    registerButton.addEventListener("click", () => __awaiter(void 0, void 0, void 0, function* () {
+        var _a;
+        const name = getInputValue("reg-name");
+        const email = getInputValue("reg-email");
+        const password = getInputValue("reg-password");
+        const group = getInputValue("reg-group");
+        try {
+            const res = yield ApiService.registerUser(name, email, password, group);
+            if (res.success) {
+                alert("Registered!");
+                return;
+            }
+            showError((_a = res.error) !== null && _a !== void 0 ? _a : "Registration failed.");
+        }
+        catch (error) {
+            showError(error instanceof Error ? error.message : "Registration failed.");
+        }
+    }));
+    loginButton.addEventListener("click", () => __awaiter(void 0, void 0, void 0, function* () {
+        const user = getInputValue("login-user");
+        const pass = getInputValue("login-password");
+        try {
+            const res = yield ApiService.loginUser(user, pass);
+            if (!res.token) {
+                showError("Login failed");
+                return;
+            }
+            alert("Login success!");
+            yield loadUsers();
+        }
+        catch (error) {
+            showError(error instanceof Error ? error.message : "Login failed");
+        }
+    }));
+    form.addEventListener("submit", (event) => __awaiter(void 0, void 0, void 0, function* () {
+        event.preventDefault();
         const message = input.value.trim();
         if (!message) {
-            console.log("EMPTY MESSAGE");
             return;
         }
         if (!selectedUser) {
@@ -91,20 +120,17 @@ window.addEventListener("DOMContentLoaded", () => {
             alert("Login first!");
             return;
         }
-        // IMMEDIATE VISUAL FEEDBACK
-        const chat = document.getElementById("chat-messages");
+        const chat = getElementById("chat-messages");
         const div = document.createElement("div");
         div.className = "sent";
         div.textContent = message;
         chat.appendChild(div);
         input.value = "";
-        // API CALL
         try {
-            const res = yield ApiService.sendMessage(myId, selectedUser, message);
-            console.log("API RESPONSE:", res);
+            yield ApiService.sendMessage(myId, selectedUser, message);
         }
-        catch (err) {
-            console.error(err);
+        catch (error) {
+            showError(error instanceof Error ? error.message : "Unable to send message.");
         }
     }));
 });

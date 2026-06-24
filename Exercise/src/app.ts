@@ -1,103 +1,131 @@
-import { ApiService } from "./ApiService.js"; //es module
+﻿import { ApiService } from "./ApiService.js";
 
-let selectedUser: string | null = null; //user auf null gesetzt
+let selectedUser: string | null = null;
 
+const getElementById = <T extends HTMLElement>(id: string): T => {
+  const element = document.getElementById(id);
 
-document.getElementById("register-btn")!.addEventListener("click", async () => {
-  const name = (document.getElementById("reg-name") as HTMLInputElement).value;
-  const email = (document.getElementById("reg-email") as HTMLInputElement).value;
-  const password = (document.getElementById("reg-password") as HTMLInputElement).value;
-  const group = (document.getElementById("reg-group") as HTMLInputElement).value;
+  if (!element) {
+    throw new Error(`Element with id "${id}" not found.`);
+  }
 
-  const res = await ApiService.registerUser(name, email, password, group);
+  return element as T;
+};
 
-  alert(res.success ? "Registered!" : res.error);
-});
+const getInputValue = (id: string): string => {
+  return getElementById<HTMLInputElement>(id).value.trim();
+};
 
+const showError = (message: string): void => {
+  console.error(message);
+  alert(message);
+};
 
-document.getElementById("login-btn")!.addEventListener("click", async () => {
-  const user = (document.getElementById("login-user") as HTMLInputElement).value;
-  const pass = (document.getElementById("login-password") as HTMLInputElement).value;
+const loadUsers = async (): Promise<void> => {
+  try {
+    const users = await ApiService.getUsers();
+    const list = getElementById<HTMLUListElement>("user-list");
 
-  const res = await ApiService.loginUser(user, pass);
+    list.innerHTML = "";
 
-  if (!res.token) {
-    alert("Login failed");
+    users.forEach((user) => {
+      const li = document.createElement("li");
+      li.textContent = user.name;
+
+      li.addEventListener("click", async () => {
+        list.querySelectorAll("li").forEach((item) => item.classList.remove("active"));
+        li.classList.add("active");
+
+        selectedUser = user.id;
+        await loadConversation(user.id);
+      });
+
+      list.appendChild(li);
+    });
+  } catch (error) {
+    showError(error instanceof Error ? error.message : "Unable to load users.");
+  }
+};
+
+const loadConversation = async (otherUserId: string): Promise<void> => {
+  const myId = ApiService.getUserId();
+
+  if (!myId) {
     return;
   }
 
-  alert("Login success!");
-  loadUsers();
-});
+  try {
+    const messages = await ApiService.getConversation(myId, otherUserId);
+    const chat = getElementById<HTMLDivElement>("chat-messages");
 
+    chat.innerHTML = "";
 
-async function loadUsers() {
-  const users = await ApiService.getUsers();
+    messages.forEach((msg) => {
+      const div = document.createElement("div");
+      div.className = msg.sender_id === myId ? "sent" : "received";
+      div.textContent = msg.message;
+      chat.appendChild(div);
+    });
 
-  const list = document.getElementById("user-list")!;
-  list.innerHTML = ""; //zuerst geleert
-
-  users.forEach(user => {
-    const li = document.createElement("li");
-    li.textContent = user.name;
-
-    li.onclick = () => {
-
-      //REMOVE active from all
-      document.querySelectorAll("#user-list li")
-        .forEach(el => el.classList.remove("active"));
-
-      //SET active, nur der geklickte user
-      li.classList.add("active");
-
-      selectedUser = user.id;
-      loadConversation(user.id);
-    };
-
-    list.appendChild(li);
-  });
-}
-
-async function loadConversation(otherUserId: string) {
-  const myId = ApiService.getUserId();
-  if (!myId) return; //wenn kein user eingeloggt, abbrechen
-
-  const messages = await ApiService.getConversation(myId, otherUserId);
-
-  const chat = document.getElementById("chat-messages")!;
-  chat.innerHTML = ""; //zuerst geleert
-
-  messages.forEach(msg => {
-    const div = document.createElement("div");
-    div.className = msg.sender_id === myId ? "sent" : "received"; //unterscheidung ob gesendet oder empfangen
-    div.textContent = msg.message;
-    chat.appendChild(div);
-  });
-
-  chat.scrollTop = chat.scrollHeight; //nach unten gescrollt
-}
+    chat.scrollTop = chat.scrollHeight;
+  } catch (error) {
+    showError(error instanceof Error ? error.message : "Unable to load conversation.");
+  }
+};
 
 window.addEventListener("DOMContentLoaded", () => {
-
   console.log("APP READY");
 
-  const form = document.getElementById("chat-form") as HTMLFormElement;
-  const input = document.getElementById("chat-input") as HTMLInputElement;
+  const registerButton = getElementById<HTMLButtonElement>("register-btn");
+  const loginButton = getElementById<HTMLButtonElement>("login-btn");
+  const form = getElementById<HTMLFormElement>("chat-form");
+  const input = getElementById<HTMLInputElement>("chat-input");
 
-  if (!form || !input) {
-    console.error("CHAT UI NOT FOUND");
-    return;
-  }
+  registerButton.addEventListener("click", async () => {
+    const name = getInputValue("reg-name");
+    const email = getInputValue("reg-email");
+    const password = getInputValue("reg-password");
+    const group = getInputValue("reg-group");
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+    try {
+      const res = await ApiService.registerUser(name, email, password, group);
 
-    console.log("SEND CLICKED");
+      if (res.success) {
+        alert("Registered!");
+        return;
+      }
+
+      showError(res.error ?? "Registration failed.");
+    } catch (error) {
+      showError(error instanceof Error ? error.message : "Registration failed.");
+    }
+  });
+
+  loginButton.addEventListener("click", async () => {
+    const user = getInputValue("login-user");
+    const pass = getInputValue("login-password");
+
+    try {
+      const res = await ApiService.loginUser(user, pass);
+
+      if (!res.token) {
+        showError("Login failed");
+        return;
+      }
+
+      alert("Login success!");
+      await loadUsers();
+    } catch (error) {
+      showError(error instanceof Error ? error.message : "Login failed");
+    }
+  });
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
     const message = input.value.trim();
 
     if (!message) {
-      console.log("EMPTY MESSAGE");
       return;
     }
 
@@ -113,8 +141,7 @@ window.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // IMMEDIATE VISUAL FEEDBACK
-    const chat = document.getElementById("chat-messages")!;
+    const chat = getElementById<HTMLDivElement>("chat-messages");
     const div = document.createElement("div");
     div.className = "sent";
     div.textContent = message;
@@ -122,13 +149,10 @@ window.addEventListener("DOMContentLoaded", () => {
 
     input.value = "";
 
-    // API CALL
     try {
-      const res = await ApiService.sendMessage(myId, selectedUser, message);
-      console.log("API RESPONSE:", res);
-    } catch (err) {
-      console.error(err);
+      await ApiService.sendMessage(myId, selectedUser, message);
+    } catch (error) {
+      showError(error instanceof Error ? error.message : "Unable to send message.");
     }
   });
-
 });
