@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Piano</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&display=swap" rel="stylesheet">
+</head>
+
+<body background="bg.png">
+    <div class="buffer"></div>
+    
+    <div class="container text-center my-5">
+
+        <h1>Piano</h1>
+
+        <p>Keyboard mapping:</p>
+        <p>A = C; S = D; D = E; F = F; G = G; H = A; J = B</p>
+
+        <div id="piano" class="d-flex justify-content-center">
+            <div class ="key" id="keyC">C</div>
+            <div class ="key" id="keyD">D</div>
+            <div class ="key" id="keyE">E</div>
+            <div class ="key" id="keyF">F</div>
+            <div class ="key" id="keyG">G</div>
+            <div class ="key" id="keyA">A</div>
+            <div class ="key" id="keyB">B</div>
+        </div>
+
+        <button id="resetBtn" class="btn btn-primary mt-3">Reset</button>
+        <button id="playPauseBtn" class="btn btn-secondary mt-3 ml-2">Play Loaded Melody</button> 
+
+    </div>
+    <script src="script.js" defer></script> 
+</body>
+</html>

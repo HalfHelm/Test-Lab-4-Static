@@ -1,0 +1,24 @@
+.key {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+    width: 40px;
+    background-color: #a29797;
+    gap: 30px;
+    border-radius: 10px;
+    margin: 5px;
+}
+.buffer {
+    height: 170px;
+}
+h1 {
+    font-weight: bold;
+    font-family: 'Uncial Antiqua', cursive;
+}
+p {
+    font-family: 'Uncial Antiqua', cursive;
+}
+.active{
+    background: yellow;
+}
