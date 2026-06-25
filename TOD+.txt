@@ -1,0 +1,23 @@
+TOD+
+
+DONE Test für normales Item vor Ablaufdatum erstellen
+
+DONE Test für normales Item nach Ablaufdatum erstellen
+
+DONE Test für minimale Qualität (0) erstellen
+
+DONE Test für Aged Brie  erstellen
+
+DONE Test für maximale Qualität (50) bei Aged Brie erstellen
+
+DONE Test für Backstage Pass (>10 Tage) erstellen
+
+DONE Test für Backstage Pass (<=10 Tage) erstellen
+
+DONE Test für Backstage Pass (<=5 Tage) erstellen
+
+SONE Test für Backstage Pass nach Konzert erstellen
+
+DONE Test für maximale Qualität (50) bei Backstage Passes erstellen
+
+DONE Test für Sulfuras erstellen
