@@ -5,6 +5,7 @@ function Item(name, sell_in, quality) {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 items.push(
   new Item('+5 Dexterity Vest', 10, 20),
   new Item('Aged Brie', 2, 0),
@@ -14,6 +15,8 @@ items.push(
   new Item('Conjured Mana Cake', 3, 6)
 );
 =======
+=======
+>>>>>>> parent of 9ff56e9 (Gilded Rose mit Tests importiert)
 items.push(new Item('+5 Dexterity Vest', 10, 20));
 items.push(new Item('Aged Brie', 2, 0));
 items.push(new Item('Elixir of the Mongoose', 5, 7));
