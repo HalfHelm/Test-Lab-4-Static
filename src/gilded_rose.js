@@ -4,6 +4,8 @@ function Item(name, sell_in, quality) {
   this.quality = quality;
 }
 
+var items = []
+
 items.push(new Item('+5 Dexterity Vest', 10, 20));
 items.push(new Item('Aged Brie', 2, 0));
 items.push(new Item('Elixir of the Mongoose', 5, 7));
@@ -13,70 +15,58 @@ items.push(new Item('Conjured Mana Cake', 3, 6));
 
 function update_quality() {
 
-  for (const item of items) {
+  for (var i = 0; i < items.length; i++) {
 
-    let isAgedBrie = item.name === 'Aged Brie';
-    let isBackstage = item.name === 'Backstage passes to a TAFKAL80ETC concert';
-    let isSulfuras = item.name === 'Sulfuras, Hand of Ragnaros';
-    let isConjured = item.name.indexOf('Conjured') === 0;
+    var isConjured = items[i].name.indexOf("Conjured") === 0; //VON MIR
+    if (items[i].name != 'Aged Brie' && items[i].name != 'Backstage passes to a TAFKAL80ETC concert') {
+      if (items[i].quality > 0) {
+        if (items[i].name != 'Sulfuras, Hand of Ragnaros') {
 
-    // Sulfuras does not change
-    if (isSulfuras) {
-      continue;
-    }
+          items[i].quality = items[i].quality - (isConjured ? 2 : 1); //VIB MIR
 
-    // sell_in always decreases (except Sulfuras)
-    item.sell_in--;
-
-    // Aged brie check
-    if (isAgedBrie) {
-      if (item.quality < 50) {
-        item.quality++;
-      }
-      if (item.sell_in < 0 && item.quality < 50) {
-        item.quality++;
-      }
-    }
-    // Backstage pass check
-    else if (isBackstage) {
-
-      if (item.quality < 50) {
-        item.quality++;
-
-        if (item.sell_in < 10 && item.quality < 50) {
-          item.quality++;
-        }
-
-        if (item.sell_in < 5 && item.quality < 50) {
-          item.quality++;
         }
       }
+    } else {
+      if (items[i].quality < 50) {
+        items[i].quality = items[i].quality + 1;
 
-      if (item.sell_in < 0) {
-        item.quality = 0;
+        if (items[i].name == 'Backstage passes to a TAFKAL80ETC concert') {
+          if (items[i].sell_in < 11) {
+            if (items[i].quality < 50) {
+              items[i].quality = items[i].quality + 1;
+            }
+          }
+          if (items[i].sell_in < 6) {
+            if (items[i].quality < 50) {
+              items[i].quality = items[i].quality + 1;
+            }
+          }
+        }
       }
     }
 
-    // Normal and conjured items check
-    else {
-
-      let decrease = isConjured ? 2 : 1;
-
-      if (item.quality > 0) {
-        item.quality -= decrease;
-      }
-
-      if (item.sell_in < 0 && item.quality > 0) {
-        item.quality -= decrease;
-      }
-    }
-    // Quality boundary checks
-    if (item.quality < 0) {
-      item.quality = 0;
+    if (items[i].name != 'Sulfuras, Hand of Ragnaros') {
+      items[i].sell_in = items[i].sell_in - 1;
     }
 
-    if (item.quality > 50) {
-      item.quality = 50;
+    if (items[i].sell_in < 0) {
+      if (items[i].name != 'Aged Brie') {
+        if (items[i].name != 'Backstage passes to a TAFKAL80ETC concert') {
+          if (items[i].quality > 0) {
+            if (items[i].name != 'Sulfuras, Hand of Ragnaros') {
+
+              items[i].quality = items[i].quality - 1;
+
+            }
+          }
+        } else {
+          items[i].quality = items[i].quality - items[i].quality;
+        }
+      } else {
+        if (items[i].quality < 50) {
+          items[i].quality = items[i].quality + 1;
+        }
+      }
     }
   }
 }
